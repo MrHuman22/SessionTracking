@@ -55,12 +55,12 @@ layout = [
     [sg.Text("Duration: "), sg.InputText(key = '-DURATION-')],
     [sg.Text('Progress: ')],
     [sg.ProgressBar(1000,'h',size=(40,20), key='ProgressBar')],
-    [sg.Button("Start",key='begin'),sg.Cancel()]
+    [sg.Button("Start"),sg.Cancel()]
 ]
 
 window = sg.Window("Record Work Session", layout)
 progressBar = window['ProgressBar']
-startButton = window['begin']
+# startButton = window['begin']
 started = False
 
 while True:
@@ -75,7 +75,7 @@ while True:
         mins = float(values['-DURATION-'])
         startTime = datetime.now()
         endTime = startTime + timedelta(minutes=mins)
-        increments = 1000/(mins*60)*5
+        increments = 1000/(mins*60)
         progress = 0
         started = True
         print("starting the timer")
@@ -88,7 +88,7 @@ while True:
             playsound("sms-alert-2-daniel_simon.mp3")
             sg.Popup("Go on to your next task!")
             break
-        elif datetime.now() > currentTime + timedelta(seconds=5):
+        elif datetime.now() >= currentTime + timedelta(seconds=1):
             progress = progress + increments
             progressBar.UpdateBar(progress) # put in the new progress thing
             currentTime = datetime.now() # update the time
