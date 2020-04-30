@@ -24,27 +24,7 @@ def saveSession(TaskDescription, Category, Duration, TimeStart, TimeEnd):
 
 
 
-class Session:
-    def __init__(self, desc, duration_):
-        self.started = False
-        self.taskDescription = desc
-        self.startTime = datetime.now()
-        self.duration = float(duration_)
-        self.endTime = self.startTime + timedelta(minutes=self.duration)
-        self.increment = 1000 / (self.duration * 60)
-        self.progress = 0
 
-    def saveSession(self):
-        pass
-
-    def start(self):
-        self.started = True
-    
-    def pause(self):
-        self.started = False
-
-    def incrementProgress(self):
-        self.progress += self.increment
 
 categoryOptions = sorted(["Excel Development", "Teacher Resource Development", "R&D", "Activity Development", "Show Development", "Event Management", "Misc", "3D Printing"])
 sg.change_look_and_feel("Dark Blue 3")
