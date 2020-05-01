@@ -15,5 +15,6 @@ while True:
     elif event == "toggleStart":
         Started = not Started
         begin.update(text=StartPause[Started])
+        sg.Popup("Things have changed!")
 
 window.close()
