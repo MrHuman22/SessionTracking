@@ -10,9 +10,11 @@ class Session:
         self.duration = float(duration_)
         self.increment = 1000 / (self.duration * 60) # divide 1000 by the number of seconds in duration
         self.progress = 0
-        self.startTime = datetime.strftime(self.currentTime, "%H:%M")
-        self.currentDate = datetime.strftime(self.startTime,"%Y/%m/%d")
+        self.startTime = self.currentTime
+        self.currentDate = datetime.strftime(self.currentTime,"%Y/%m/%d")
         self.allotedTime = timedelta(minutes = self.duration)
+        self.scheduledEndTime = self.startTime + self.allotedTime
+        self.extendTime = False
         self.endTime = None
         self.ellapsedTime = None
         self.timeDifference = None
@@ -24,16 +26,25 @@ class Session:
 
     def toggleStart(self):
         self.started = not self.started
+        print(f"started: {self.started}")
+    
+    def toggleExtend(self):
+        self.extendTime = not self.extendTime
+        print(f"extend time: {self.extendTime}")
 
     def incrementProgress(self):
         self.progress += self.increment
 
+    def getTimeRemaining(self):
+        return self.scheduledEndTime - self.currentTime 
+
     def endSession(self, details):
         # update all the end timings and save the session
         self.endTime = datetime.now()
-        self.allotedTime = self.endTime - self.startTime
         self.ellapsedTime = self.endTime - self.startTime
-        self.timeDifference = self.ellapsedTime - self.allotedTime
+        self.timeDifference = self.endTime - self.scheduledEndTime
+        self.startTime = datetime.strftime(self.startTime,"%H:%M")
+        self.endTime = datetime.strftime(self.endTime,"%H:%M")
         self.details = details
         self.saveSession()
 
