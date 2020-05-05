@@ -42,11 +42,20 @@ class Session:
         # update all the end timings and save the session
         self.endTime = datetime.now()
         self.ellapsedTime = self.endTime - self.startTime
-        self.timeDifference = self.endTime - self.scheduledEndTime
+        self.timeDifference = self.formatTimeDiff()
         self.startTime = datetime.strftime(self.startTime,"%H:%M")
         self.endTime = datetime.strftime(self.endTime,"%H:%M")
         self.details = details
         self.saveSession()
+    
+    # the problem with this function is that it could be called out of sequence
+    def formatTimeDiff(self):
+        if self.endTime > self.scheduledEndTime:
+            return (self.endTime - self.scheduledEndTime).seconds/60
+        elif self.scheduledEndTime > self.endTime:
+            return -(self.scheduledEndTime - self.endTime).seconds/60
+        elif self.endTime == self.scheduledEndTime:
+            return 0
 
     def saveSession(self):
         with open("test.csv", "a") as fh:
