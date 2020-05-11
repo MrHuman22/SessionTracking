@@ -5,9 +5,8 @@ from datetime import datetime, timedelta
 
 """
 TODO: Time remaining
-TODO: Fix button update feature
 TODO: Application Class refactor
-TODO: Graphical display
+TODO: Graphical display of session breakdown
 TODO: Persistent Window between Sessions?
 """
 
