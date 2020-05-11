@@ -23,14 +23,12 @@ layout = [
     [sg.Text('Details: '), sg.InputText(key='-DETAILS-')],
     [sg.ProgressBar(1000,'h',size=(40,20), key='ProgressBar')],
     [sg.Text("Time remaining:"),sg.Text(0, key = 'displayTimeRemaining')],
-    [sg.Button("Start", key= "toggleStart"),sg.Button("Extend"), sg.Cancel()]
+    [sg.Button("Start", key= "toggleStart"),sg.Button("End Session", disabled=True, key="-END SESSION-"),sg.Button("Extend"), sg.Cancel()]
 ]
 
 window = sg.Window("Record Work Session", layout)
-progressBar = window['ProgressBar']
-begin = window['toggleStart']
 initPhase = True
-StartPause = {True : "Start", False: "Pause"}
+StartPause = {False : "Start", True: "Pause"}
 session = None #declare global variable
 
 
@@ -42,23 +40,28 @@ while True:
         if event == "toggleStart":
         # create a new session
             session = Session(values['-TASK-'], values['-CATEGORY-'], values['-DURATION-'])
+            window['toggleStart'].update(StartPause[session.started])
+            window['-END SESSION-'].update(disabled=False)
             initPhase = False #turn off input phase
             print("turning off initPhase")
 
         if event in (None, "Cancel"):
+            print("Cancelling session. No harm done.")
             break
 
     elif not initPhase:
         if event in (None, "Cancel"):
+            print("Session cancelled... No harm done...")
             session.endSession(values['-DETAILS-'])
             break
-        
-        if event == "Extend":
-            session.toggleExtend()
+
+        if event == "-END SESSION-":
+            print("Ending session early...")
+            session.endSession(values['-DETAILS-'])
 
         if event == "toggleStart":
             session.toggleStart()
-            begin.update(text=StartPause[session.started]) #update
+            window['begin'].update(text=StartPause[session.started]) #update
 
     # note, if the session isn't in the started state, the progress bar doesn't progress
         
@@ -76,6 +79,6 @@ while True:
             # print(timeRemaining)
             # window['displayTimeRemaining'].update(session.getTimeRemaining())
             # print(session.getTimeRemaining())
-            progressBar.UpdateBar(session.progress)
+            window["ProgressBar"].UpdateBar(session.progress)
 
 window.close()
