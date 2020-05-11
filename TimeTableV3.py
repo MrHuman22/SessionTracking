@@ -5,10 +5,14 @@ from datetime import datetime, timedelta
 
 """
 TODO: Time remaining
+TODO: Fix button update feature
+TODO: Application Class refactor
+TODO: Graphical display
+TODO: Persistent Window between Sessions?
 """
 
 # Categories
-categoryOptions = sorted(["Excel Development", "Teacher Resource Development", "R&D", "Activity Development", "Show Development", "Event Management", "Misc", "3D Printing"])
+categoryOptions = sorted(["Phone Calls","Meetings", "Excel Development", "Teacher Resource Development", "R&D", "Activity Development", "Show Development", "Event Management", "Misc", "3D Printing"])
 sg.change_look_and_feel("Dark Blue 3")
 
 
