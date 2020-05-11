@@ -23,7 +23,7 @@ layout = [
     [sg.Text('Details: '), sg.InputText(key='-DETAILS-')],
     [sg.ProgressBar(1000,'h',size=(40,20), key='ProgressBar')],
     [sg.Text("Time remaining:"),sg.Text(0, key = 'displayTimeRemaining')],
-    [sg.Button("Start", key= "toggleStart"),sg.Button("End Session", disabled=True, key="-END SESSION-"),sg.Button("Extend"), sg.Cancel()]
+    [sg.Button("Start", key= "toggleStart"),sg.Button("End Session", disabled=True, key="-END SESSION-"), sg.Cancel()]
 ]
 
 window = sg.Window("Record Work Session", layout)
@@ -52,33 +52,33 @@ while True:
     elif not initPhase:
         if event in (None, "Cancel"):
             print("Session cancelled... No harm done...")
-            session.endSession(values['-DETAILS-'])
             break
 
         if event == "-END SESSION-":
             print("Ending session early...")
             session.endSession(values['-DETAILS-'])
+            break
 
         if event == "toggleStart":
             session.toggleStart()
             window['begin'].update(text=StartPause[session.started]) #update
 
     # note, if the session isn't in the started state, the progress bar doesn't progress
-        
-        if session.progress >= 1000:
-            print("Finished!")
-            playsound("sms-alert-2-daniel_simon_short.mp3")
-            sg.Popup("Go on to your next task?")
-            # when signed off, save the session
-            session.endSession(values['-DETAILS-'])
-            break
+        if session.started:
+            if session.progress >= 1000:
+                print("Finished!")
+                playsound("sms-alert-2-daniel_simon_short.mp3")
+                sg.Popup("Go on to your next task?")
+                # when signed off, save the session
+                session.endSession(values['-DETAILS-'])
+                break
 
-        elif datetime.now() >= session.currentTime + timedelta(seconds = 1) and not session.extendTime:
-            session.incrementProgress()
-            session.updateCurrentTime()
-            # print(timeRemaining)
-            # window['displayTimeRemaining'].update(session.getTimeRemaining())
-            # print(session.getTimeRemaining())
-            window["ProgressBar"].UpdateBar(session.progress)
+            elif datetime.now() >= session.currentTime + timedelta(seconds = 1):
+                session.incrementProgress()
+                session.updateCurrentTime()
+                # print(timeRemaining)
+                # window['displayTimeRemaining'].update(session.getTimeRemaining())
+                # print(session.getTimeRemaining())
+                window["ProgressBar"].UpdateBar(session.progress)
 
 window.close()
