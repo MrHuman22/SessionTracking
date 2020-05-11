@@ -3,7 +3,7 @@ import csv
 
 class Session:
     def __init__(self, taskDescription_, category_,  duration_):
-        self.started = False
+        self.started = True
         self.taskDescription = taskDescription_
         self.category = category_
         self.currentTime = datetime.now()
@@ -14,7 +14,6 @@ class Session:
         self.currentDate = datetime.strftime(self.currentTime,"%Y/%m/%d")
         self.allotedTime = timedelta(minutes = self.duration)
         self.scheduledEndTime = self.startTime + self.allotedTime
-        self.extendTime = False
         self.endTime = None
         self.ellapsedTime = None
         self.timeDifference = None
@@ -26,11 +25,7 @@ class Session:
 
     def toggleStart(self):
         self.started = not self.started
-        print(f"started: {self.started}")
-    
-    def toggleExtend(self):
-        self.extendTime = not self.extendTime
-        print(f"extend time: {self.extendTime}")
+        print(f"toggled started: {self.started}")
 
     def incrementProgress(self):
         self.progress += self.increment
