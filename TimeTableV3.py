@@ -8,6 +8,7 @@ TODO: Time remaining
 TODO: Application Class refactor
 TODO: Graphical display of session breakdown
 TODO: Persistent Window between Sessions?
+TODO: Handle Pause Timing --> once paused, record the total elapsed time
 """
 
 # Categories
@@ -38,7 +39,7 @@ while True:
     if initPhase:
         if event == "toggleStart":
         # create a new session
-            session = Session(values['-TASK-'], values['-CATEGORY-'], values['-DURATION-'])
+            session = Session(values['-CATEGORY-'], values['-DURATION-'])
             window['toggleStart'].update(StartPause[session.started])
             window['-END SESSION-'].update(disabled=False)
             initPhase = False #turn off input phase
@@ -55,7 +56,7 @@ while True:
 
         if event == "-END SESSION-":
             print("Ending session early...")
-            session.endSession(values['-DETAILS-'])
+            session.endSession(values['-TASK-'],values['-DETAILS-'])
             break
 
         if event == "toggleStart":
@@ -69,7 +70,7 @@ while True:
                 playsound("sms-alert-2-daniel_simon_short.mp3")
                 sg.Popup("Go on to your next task?")
                 # when signed off, save the session
-                session.endSession(values['-DETAILS-'])
+                session.endSession(values['-TASK-'],values['-DETAILS-'])
                 break
 
             elif datetime.now() >= session.currentTime + timedelta(seconds = 1):

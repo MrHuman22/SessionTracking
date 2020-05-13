@@ -2,9 +2,8 @@ from datetime import datetime, timedelta
 import csv
 
 class Session:
-    def __init__(self, taskDescription_, category_,  duration_):
+    def __init__(self, category_,  duration_):
         self.started = True
-        self.taskDescription = taskDescription_
         self.category = category_
         self.currentTime = datetime.now()
         self.duration = float(duration_)
@@ -12,12 +11,13 @@ class Session:
         self.progress = 0
         self.startTime = self.currentTime
         self.currentDate = datetime.strftime(self.currentTime,"%Y/%m/%d")
-        self.allotedTime = timedelta(minutes = self.duration)
-        self.scheduledEndTime = self.startTime + self.allotedTime
+        self.scheduledEndTime = self.startTime + timedelta(minutes=self.duration)
         self.endTime = None
         self.ellapsedTime = None
+        self.allotedTime = None
         self.timeDifference = None
         self.details = None
+        self.taskDescription = None
         print(f"Session begun: \nTask Description: {self.taskDescription}\nCategory: {self.category}\nAlloted Time: {self.duration}")
 
     def updateCurrentTime(self):
@@ -33,13 +33,15 @@ class Session:
     def getTimeRemaining(self):
         return self.scheduledEndTime - self.currentTime 
 
-    def endSession(self, details):
+    def endSession(self, task, details):
         # update all the end timings and save the session
+        self.taskDescription = task
         self.endTime = datetime.now()
-        self.ellapsedTime = self.endTime - self.startTime
-        self.timeDifference = self.formatTimeDiff()
+        self.ellapsedTime = round((self.endTime - self.startTime).seconds/60, 2)
+        self.timeDifference = round(self.formatTimeDiff(),2)
         self.startTime = datetime.strftime(self.startTime,"%H:%M")
         self.endTime = datetime.strftime(self.endTime,"%H:%M")
+        self.allotedTime = round(self.duration,2)
         self.details = details
         self.saveSession()
     
