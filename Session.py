@@ -18,14 +18,36 @@ class Session:
         self.timeDifference = None
         self.details = None
         self.taskDescription = None
-        print(f"Session begun: \nTask Description: {self.taskDescription}\nCategory: {self.category}\nAlloted Time: {self.duration}")
+        self.pauseTime = timedelta(seconds= 0)
+        self.pauseStart = None
+        self.pauseEnd = None
+        print(f"Session begun: \nCategory: {self.category}\nAlloted Time: {self.duration}")
+
+    # Dealing with Pauses.
+    def startPause(self):
+        self.pauseStart = datetime.now()
+
+    def endPause(self):
+        self.pauseEnd = datetime.now()
+        self.pauseTime += self.pauseEnd - self.pauseStart
+        print(f"Cumulative pause time: {self.pauseTime}")
 
     def updateCurrentTime(self):
         self.currentTime = datetime.now()
 
-    def toggleStart(self):
+    # Note, this only gets called outside of the initPhase, but the parameter is here just to make that explicit
+    def toggleStart(self, initPhase):
+        if not initPhase:
+            if self.started:
+                self.startPause()
+                print("start pause")
+            elif not self.started:
+                self.endPause()
+                print("end pause")
         self.started = not self.started
         print(f"toggled started: {self.started}")
+        
+
 
     def incrementProgress(self):
         self.progress += self.increment
@@ -37,7 +59,7 @@ class Session:
         # update all the end timings and save the session
         self.taskDescription = task
         self.endTime = datetime.now()
-        self.ellapsedTime = round((self.endTime - self.startTime).seconds/60, 2)
+        self.ellapsedTime = round(((self.endTime - self.startTime)-self.pauseTime).seconds/60, 2)
         self.timeDifference = round(self.formatTimeDiff(),2)
         self.startTime = datetime.strftime(self.startTime,"%H:%M")
         self.endTime = datetime.strftime(self.endTime,"%H:%M")

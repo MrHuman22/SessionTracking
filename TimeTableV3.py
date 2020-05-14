@@ -60,7 +60,7 @@ while True:
             break
 
         if event == "toggleStart":
-            session.toggleStart()
+            session.toggleStart(initPhase)
             window['toggleStart'].update(text=StartPause[session.started]) #update
 
     # note, if the session isn't in the started state, the progress bar doesn't progress
