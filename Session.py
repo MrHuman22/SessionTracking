@@ -66,6 +66,18 @@ class Session:
         self.allotedTime = round(self.duration,2)
         self.details = details
         self.saveSession()
+
+    def logPastSession(self, task, details, startTime, endTime):
+        self.taskDescription = task
+        self.details = details
+        self.startTime = datetime.strptime(startTime,"%H:%M")
+        self.endTime = datetime.strptime(endTime, "%H:%M")
+        self.ellapsedTime = round((self.endTime - self.startTime).seconds/60, 2)
+        self.allotedTime = round(self.duration, 2)
+        self.timeDifference = "NA"
+        self.startTime = datetime.strftime(self.startTime,"%H:%M")
+        self.endTime = datetime.strftime(self.endTime,"%H:%M")
+        self.saveSession()
     
     # the problem with this function is that it could be called out of sequence
     def formatTimeDiff(self):

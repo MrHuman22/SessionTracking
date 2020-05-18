@@ -9,6 +9,7 @@ TODO: Application Class refactor
 TODO: Graphical display of session breakdown
 TODO: Persistent Window between Sessions?
 TODO: Handle Pause Timing --> once paused, record the total elapsed time
+TODO: Time after the fact
 """
 
 # Categories
@@ -23,7 +24,10 @@ layout = [
     [sg.Text('Details: '), sg.InputText(key='-DETAILS-')],
     [sg.ProgressBar(1000,'h',size=(40,20), key='ProgressBar')],
     [sg.Text("Time remaining:"),sg.Text(0, key = 'displayTimeRemaining')],
-    [sg.Button("Start", key= "toggleStart"),sg.Button("End Session", disabled=True, key="-END SESSION-"), sg.Cancel()]
+    [sg.Text('Record session after the fact:')],
+    [sg.Text('Start Time: '), sg.InputText(key='-STARTTIME-')], 
+    [sg.Text('End Time: '), sg.InputText(key='-ENDTIME-')],
+    [sg.Button('Record session',key='-LOG-'), sg.Button("Start", key= "toggleStart"),sg.Button("End Session", disabled=True, key="-END SESSION-"), sg.Cancel()]
 ]
 
 window = sg.Window("Record Work Session", layout)
@@ -36,6 +40,12 @@ session = None #declare global variable
 while True:
     # poll the window every 1000 ms
     event, values = window.Read(timeout = 1000)
+    #TODO: Check that the right things are filled in --> disable until all done
+    if event == '-LOG-':
+        session = Session(values['-CATEGORY-'], values['-DURATION-'])
+        session.logPastSession(values['-TASK-'],values['-DETAILS-'], values['-STARTTIME-'], values['-ENDTIME-'])
+        break
+    
     if initPhase:
         if event == "toggleStart":
         # create a new session
