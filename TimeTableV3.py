@@ -8,8 +8,7 @@ TODO: Time remaining
 TODO: Application Class refactor
 TODO: Graphical display of session breakdown
 TODO: Persistent Window between Sessions?
-TODO: Handle Pause Timing --> once paused, record the total elapsed time
-TODO: Time after the fact
+TODO: Dynamically hide/reveal session type
 """
 
 # Categories
@@ -27,7 +26,7 @@ layout = [
     [sg.Text('Record session after the fact:')],
     [sg.Text('Start Time: '), sg.InputText(key='-STARTTIME-')], 
     [sg.Text('End Time: '), sg.InputText(key='-ENDTIME-')],
-    [sg.Button('Record session',key='-LOG-'), sg.Button("Start", key= "toggleStart"),sg.Button("End Session", disabled=True, key="-END SESSION-"), sg.Cancel()]
+    [sg.Button('Record session',key='-LOG-'), sg.Button("Start", key= "toggleStart", disabled=True),sg.Button("End Session", disabled=True, key="-END SESSION-"), sg.Cancel()]
 ]
 
 window = sg.Window("Record Work Session", layout)
@@ -36,22 +35,43 @@ StartPause = {False : "Start", True: "Pause"}
 session = None #declare global variable
 
 
+def validStartSession(category,duration):
+    # these need to be filled in before a session can be started
+    if category != "" and duration != "":
+        return True
+    else:
+        return False
+
+def validEndSession(task, details):
+    # To end a session, you need a 
+    if task != "" and details != "":
+        return True
+    else:
+        return False
+
+
 # the loop
 while True:
     # poll the window every 1000 ms
     event, values = window.Read(timeout = 1000)
-    #TODO: Check that the right things are filled in --> disable until all done
-    if event == '-LOG-':
-        session = Session(values['-CATEGORY-'], values['-DURATION-'])
-        session.logPastSession(values['-TASK-'],values['-DETAILS-'], values['-STARTTIME-'], values['-ENDTIME-'])
-        break
+    print(f"event: {event}")
+    print(f"values:{values}")
     
     if initPhase:
+        if validStartSession(values['-CATEGORY-'],values['-DURATION-']):
+            window['toggleStart'].update(disabled=False)
+    
+        if event == '-LOG-':
+            session = Session(values['-CATEGORY-'], values['-DURATION-'])
+            session.logPastSession(values['-TASK-'],values['-DETAILS-'], values['-STARTTIME-'], values['-ENDTIME-'])
+            break
+
         if event == "toggleStart":
         # create a new session
             session = Session(values['-CATEGORY-'], values['-DURATION-'])
             window['toggleStart'].update(StartPause[session.started])
-            window['-END SESSION-'].update(disabled=False)
+            if validEndSession(values['-TASK-'], values['-DETAILS-']):
+                window['-END SESSION-'].update(disabled=False)
             initPhase = False #turn off input phase
             print("turning off initPhase")
 
@@ -63,6 +83,11 @@ while True:
         if event in (None, "Cancel"):
             print("Session cancelled... No harm done...")
             break
+
+        if validEndSession(values['-TASK-'], values['-DETAILS-']):
+            window['-END SESSION-'].update(disabled=False)
+        elif not validEndSession(values['-TASK-'], values['-DETAILS-']):
+            window['-END SESSION-'].update(disabled=True)
 
         if event == "-END SESSION-":
             print("Ending session early...")
