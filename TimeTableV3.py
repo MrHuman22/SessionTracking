@@ -9,6 +9,8 @@ TODO: Application Class refactor
 TODO: Graphical display of session breakdown
 TODO: Persistent Window between Sessions?
 TODO: Dynamically hide/reveal session type
+
+
 """
 
 # Categories
@@ -26,7 +28,7 @@ layout = [
     [sg.Text('Record session after the fact:')],
     [sg.Text('Start Time: '), sg.InputText(key='-STARTTIME-')], 
     [sg.Text('End Time: '), sg.InputText(key='-ENDTIME-')],
-    [sg.Button('Record session',key='-LOG-'), sg.Button("Start", key= "toggleStart", disabled=True),sg.Button("End Session", disabled=True, key="-END SESSION-"), sg.Cancel()]
+    [sg.Button('Record session',key='-LOG-',disabled=True), sg.Button("Start", key= "toggleStart", disabled=True),sg.Button("End Session", disabled=True, key="-END SESSION-"), sg.Cancel()]
 ]
 
 window = sg.Window("Record Work Session", layout)
@@ -34,33 +36,37 @@ initPhase = True
 StartPause = {False : "Start", True: "Pause"}
 session = None #declare global variable
 
+def validStart(category, duration):
+    return validFieldInfo(category, duration)
 
-def validStartSession(category,duration):
-    # these need to be filled in before a session can be started
-    if category != "" and duration != "":
-        return True
-    else:
-        return False
+def validLogPastSession(task, duration, category, startTime, endTime):
+    return validFieldInfo(task, duration, category, startTime, endTime)
 
 def validEndSession(task, details):
-    # To end a session, you need a 
-    if task != "" and details != "":
+    return validFieldInfo(task, details)
+
+def validFieldInfo(*argv):
+    """Used to record when enough information has been entered"""
+    if all(map(lambda x: x != "", argv)):
         return True
     else:
         return False
 
-
-# the loop
+#the loop
 while True:
     # poll the window every 1000 ms
     event, values = window.Read(timeout = 1000)
-    print(f"event: {event}")
-    print(f"values:{values}")
-    
+    # print(f"event: {event}")
+    # print(f"values:{values}")
+   
+   # checking and updating buttons
+    logInfoRecorded = validLogPastSession(values['-TASK-'],values['-DURATION-'], values['-CATEGORY-'], values['-STARTTIME-'], values['-ENDTIME-'])
+    window['-LOG-'].update(disabled= not logInfoRecorded) 
+
     if initPhase:
-        if validStartSession(values['-CATEGORY-'],values['-DURATION-']):
+        if validStart(values['-CATEGORY-'],values['-DURATION-']):
             window['toggleStart'].update(disabled=False)
-    
+            
         if event == '-LOG-':
             session = Session(values['-CATEGORY-'], values['-DURATION-'])
             session.logPastSession(values['-TASK-'],values['-DETAILS-'], values['-STARTTIME-'], values['-ENDTIME-'])
