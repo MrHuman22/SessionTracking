@@ -67,9 +67,10 @@ class Session:
         self.details = details
         self.saveSession()
 
-    def logPastSession(self, task, details, startTime, endTime):
+    def logPastSession(self, task, details, startTime, endTime, date = ""):
         self.taskDescription = task
         self.details = details
+        self.currentDate = self.getDate(date) # possibly needs some quality control
         self.startTime = datetime.strptime(startTime,"%H:%M")
         self.endTime = datetime.strptime(endTime, "%H:%M")
         self.ellapsedTime = round((self.endTime - self.startTime).seconds/60, 2)
@@ -79,6 +80,11 @@ class Session:
         self.endTime = datetime.strftime(self.endTime,"%H:%M")
         self.saveSession()
     
+    def getDate(self, date):
+        if date == "":
+            return self.currentDate
+        else:
+            return date
     # the problem with this function is that it could be called out of sequence
     def formatTimeDiff(self):
         if self.endTime > self.scheduledEndTime:

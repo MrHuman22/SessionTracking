@@ -9,29 +9,37 @@ TODO: Application Class refactor
 TODO: Graphical display of session breakdown
 TODO: Persistent Window between Sessions?
 TODO: Dynamically hide/reveal session type
-
-
+TODO: Move debug to menu
+TODO: Fix the append adding extra rows
 """
 
 # Categories
 categoryOptions = sorted(["Phone Calls","Meetings", "Excel Development", "Teacher Resource Development", "R&D", "Activity Development", "Show Development", "Event Management", "Misc", "3D Printing"])
 sg.change_look_and_feel("Dark Blue 3")
 
-
-layout = [
-    [sg.Text("Task: "), sg.InputText(key='-TASK-')],
-    [sg.Text("Category"), sg.Combo(categoryOptions, key = '-CATEGORY-')],
-    [sg.Text("Duration: "), sg.InputText(key = '-DURATION-')],
-    [sg.Text('Details: '), sg.InputText(key='-DETAILS-')],
-    [sg.ProgressBar(1000,'h',size=(40,20), key='ProgressBar')],
-    [sg.Text("Time remaining:"),sg.Text(0, key = 'displayTimeRemaining')],
-    [sg.Text('Record session after the fact:')],
+pastdateFrameLayout = [
+    [sg.T('Date: '),sg.InputText(key='-DATE-')],
     [sg.Text('Start Time: '), sg.InputText(key='-STARTTIME-')], 
-    [sg.Text('End Time: '), sg.InputText(key='-ENDTIME-')],
+    [sg.Text('End Time: '), sg.InputText(key='-ENDTIME-')]
+]
+
+metadataLayout = [
+    [sg.T("Task: "), sg.InputText(key='-TASK-')],
+    [sg.T("Category"), sg.Combo(categoryOptions, key = '-CATEGORY-')],
+    [sg.T("Duration: "), sg.InputText(key = '-DURATION-')],
+    [sg.T('Details: '), sg.InputText(key='-DETAILS-')]
+]
+
+windowLayout = [
+    [sg.CB("Debug Mode",key="-DEBUG-")],
+    [sg.Frame("Details",metadataLayout)],
+    # [sg.Text("Time remaining:"),sg.Text(0, key = 'displayTimeRemaining')],
+    [sg.Frame("After the fact",pastdateFrameLayout)],
+    [sg.ProgressBar(1000,'h',size=(40,20), key='ProgressBar')],
     [sg.Button('Record session',key='-LOG-',disabled=True), sg.Button("Start", key= "toggleStart", disabled=True),sg.Button("End Session", disabled=True, key="-END SESSION-"), sg.Cancel()]
 ]
 
-window = sg.Window("Record Work Session", layout)
+window = sg.Window("Record Work Session", windowLayout)
 initPhase = True
 StartPause = {False : "Start", True: "Pause"}
 session = None #declare global variable
@@ -56,10 +64,14 @@ def validFieldInfo(*argv):
 while True:
     # poll the window every 1000 ms
     event, values = window.Read(timeout = 1000)
-    # print(f"event: {event}")
-    # print(f"values:{values}")
-   
+    if values['-DEBUG-']:
+        print(f"event: {event}, values: {values}")
+
+    if event in (None, 'Cancel'):
+       print("Quitting")
+       break
    # checking and updating buttons
+   
     logInfoRecorded = validLogPastSession(values['-TASK-'],values['-DURATION-'], values['-CATEGORY-'], values['-STARTTIME-'], values['-ENDTIME-'])
     window['-LOG-'].update(disabled= not logInfoRecorded) 
 
@@ -69,7 +81,7 @@ while True:
             
         if event == '-LOG-':
             session = Session(values['-CATEGORY-'], values['-DURATION-'])
-            session.logPastSession(values['-TASK-'],values['-DETAILS-'], values['-STARTTIME-'], values['-ENDTIME-'])
+            session.logPastSession(values['-TASK-'],values['-DETAILS-'], values['-STARTTIME-'], values['-ENDTIME-'], values['-DATE-'])
             break
 
         if event == "toggleStart":
