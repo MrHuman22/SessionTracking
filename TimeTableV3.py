@@ -14,8 +14,12 @@ TODO: Fix the append adding extra rows
 """
 
 # Categories
-categoryOptions = sorted(["Phone Calls","Meetings", "Excel Development", "Teacher Resource Development", "R&D", "Activity Development", "Show Development", "Event Management", "Misc", "3D Printing"])
+categoryOptions = sorted(["Phone Calls","Meetings", "Emails", "Excel Development", "Teacher Resource Development", "R&D", "Activity Development", "Show Development", "Event Management", "Misc", "3D Printing"])
 sg.change_look_and_feel("Dark Blue 3")
+
+menuLayout = [
+
+]
 
 pastdateFrameLayout = [
     [sg.T('Date: '),sg.InputText(key='-DATE-')],
@@ -64,12 +68,16 @@ def validFieldInfo(*argv):
 while True:
     # poll the window every 1000 ms
     event, values = window.Read(timeout = 1000)
-    if values['-DEBUG-']:
-        print(f"event: {event}, values: {values}")
 
+    # Do this first or we get a sad message
     if event in (None, 'Cancel'):
        print("Quitting")
        break
+    
+    if values['-DEBUG-']:
+        print(f"event: {event}, values: {values}")
+
+    
    # checking and updating buttons
    
     logInfoRecorded = validLogPastSession(values['-TASK-'],values['-DURATION-'], values['-CATEGORY-'], values['-STARTTIME-'], values['-ENDTIME-'])
