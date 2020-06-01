@@ -1,5 +1,6 @@
 """
 This version has a persistent window
+NOTE: you can't have a layout as a global variable and reuse it
 """
 
 from Session import Session
@@ -21,28 +22,26 @@ TODO: Fix the append adding extra rows
 categoryOptions = sorted(["Phone Calls", "Meetings", "Emails", "IT Helpdesk", "Excel Development", "Teacher Resource Development", "R&D", "Activity Development", "Show Development", "Event Management", "Misc", "3D Printing"])
 sg.change_look_and_feel("Dark Blue 3")
 
-menuLayout = [
 
-]
 
-baseLayout = [
-    [sg.Button("New Session"), sg.Quit()]
-]
 
-pastdateFrameLayout = [
+
+def generateMainWindow():
+    pastdateFrameLayout = [
     [sg.T('Date: '),sg.InputText(key='-DATE-')],
     [sg.Text('Start Time: '), sg.InputText(key='-STARTTIME-')], 
     [sg.Text('End Time: '), sg.InputText(key='-ENDTIME-')]
-]
+    ]
 
-metadataLayout = [
+    metadataLayout = [
     [sg.T("Task: "), sg.InputText(key='-TASK-')],
     [sg.T("Category"), sg.Combo(categoryOptions, key = '-CATEGORY-')],
     [sg.T("Duration: "), sg.InputText(key = '-DURATION-')],
     [sg.T('Details: '), sg.InputText(key='-DETAILS-')]
-]
+    ]
 
-def generateMainWindow():
+    
+
     windowLayout = [
         [sg.CB("Debug Mode",key="-DEBUG-")],
         [sg.Frame("Details",metadataLayout)],
@@ -54,14 +53,6 @@ def generateMainWindow():
     return sg.Window("Record Work Session", windowLayout)
 
 
-window0 = sg.Window("Session Tracker v4.0", baseLayout)
-window_active = False
-window = None
-
-
-initPhase = True
-StartPause = {False : "Start", True: "Pause"}
-session = None #declare global variable
 
 def validStart(category, duration):
     return validFieldInfo(category, duration)
@@ -79,94 +70,116 @@ def validFieldInfo(*argv):
     else:
         return False
 
+baseLayout = [[sg.Button("New Session"), sg.Quit()]]
+window0 = sg.Window("Session Tracker v4.0", baseLayout)
+window = None
+
+
+initPhase = True
+StartPause = {False : "Start", True: "Pause"}
+session = None #declare global variable
+
 #the loop
 while True:
     ev0, val0 = window0.Read(timeout = 500)
     if ev0 in (None, "Quit"):
         break
-    if ev0 == "New Session" and not window_active:
-        window_active = True
+    if ev0 == "New Session" and window == None:
         window0.Hide()
         window = generateMainWindow()
 
-        while True:
+    if window != None:
             # poll the window every 1000 ms
-            event, values = window.Read(timeout = 1000)
+        event, values = window.Read(timeout = 1000)
 
             # Do this first or we get a sad message
-            if event in (None, 'Cancel'):
-                print("Quitting")
-                break
-            
-            if values['-DEBUG-']:
-                print(f"event: {event}, values: {values}")
+        if event in (None, 'Cancel'):
+            print("Quitting")
+            window.close()
+            window = None # Destroy window
+            window0.UnHide()
+            continue # This makes sure that the rest of loop doesn't go forward
+        
+        if values['-DEBUG-']:
+            print(f"event: {event}, values: {values}")
 
             
         # checking and updating buttons
         
-            logInfoRecorded = validLogPastSession(values['-TASK-'],values['-DURATION-'], values['-CATEGORY-'], values['-STARTTIME-'], values['-ENDTIME-'])
-            window['-LOG-'].update(disabled= not logInfoRecorded) 
+        logInfoRecorded = validLogPastSession(values['-TASK-'],values['-DURATION-'], values['-CATEGORY-'], values['-STARTTIME-'], values['-ENDTIME-'])
+        window['-LOG-'].update(disabled= not logInfoRecorded) 
 
-            if initPhase:
-                if validStart(values['-CATEGORY-'],values['-DURATION-']):
-                    window['toggleStart'].update(disabled=False)
-                    
-                if event == '-LOG-':
-                    session = Session(values['-CATEGORY-'], values['-DURATION-'])
-                    session.logPastSession(values['-TASK-'],values['-DETAILS-'], values['-STARTTIME-'], values['-ENDTIME-'], values['-DATE-'])
-                    break
+        if initPhase:
+            if validStart(values['-CATEGORY-'],values['-DURATION-']):
+                window['toggleStart'].update(disabled=False)
+                
+            if event == '-LOG-':
+                session = Session(values['-CATEGORY-'], values['-DURATION-'])
+                session.logPastSession(values['-TASK-'],values['-DETAILS-'], values['-STARTTIME-'], values['-ENDTIME-'], values['-DATE-'])
+                window.close()
+                window = None
+                window0.UnHide()
+                continue
 
-                if event == "toggleStart":
-                # create a new session
-                    session = Session(values['-CATEGORY-'], values['-DURATION-'])
-                    window['toggleStart'].update(StartPause[session.started])
-                    if validEndSession(values['-TASK-'], values['-DETAILS-']):
-                        window['-END SESSION-'].update(disabled=False)
-                    initPhase = False #turn off input phase
-                    print("turning off initPhase")
-
-                if event in (None, "Cancel"):
-                    print("Cancelling session. No harm done.")
-                    break
-
-            elif not initPhase:
-                if event in (None, "Cancel"):
-                    print("Session cancelled... No harm done...")
-                    break
-
+            if event == "toggleStart":
+            # create a new session
+                session = Session(values['-CATEGORY-'], values['-DURATION-'])
+                window['toggleStart'].update(StartPause[session.started])
                 if validEndSession(values['-TASK-'], values['-DETAILS-']):
                     window['-END SESSION-'].update(disabled=False)
-                elif not validEndSession(values['-TASK-'], values['-DETAILS-']):
-                    window['-END SESSION-'].update(disabled=True)
+                initPhase = False #turn off input phase
+                print("turning off initPhase")
 
-                if event == "-END SESSION-":
-                    print("Ending session early...")
+            if event in (None, "Cancel"):
+                print("Cancelling session. No harm done.")
+                window.close()
+                window = None
+                window0.UnHide()
+                continue
+
+        elif not initPhase:
+            if event in (None, "Cancel"):
+                print("Session cancelled... No harm done...")
+                window.close()
+                window = None
+                window0.UnHide()
+                continue
+
+            if validEndSession(values['-TASK-'], values['-DETAILS-']):
+                window['-END SESSION-'].update(disabled=False)
+            elif not validEndSession(values['-TASK-'], values['-DETAILS-']):
+                window['-END SESSION-'].update(disabled=True)
+
+            if event == "-END SESSION-":
+                print("Ending session early...")
+                session.endSession(values['-TASK-'],values['-DETAILS-'])
+                window.close()
+                window = None
+                window0.UnHide()
+                continue
+
+            if event == "toggleStart":
+                session.toggleStart(initPhase)
+                window['toggleStart'].update(text=StartPause[session.started]) #update
+
+        # note, if the session isn't in the started state, the progress bar doesn't progress
+            if session.started:
+                if session.progress >= 1000:
+                    print("Finished!")
+                    playsound("sms-alert-2-daniel_simon_short.mp3")
+                    sg.Popup("Go on to your next task?")
+                    # when signed off, save the session
                     session.endSession(values['-TASK-'],values['-DETAILS-'])
-                    break
+                    window.close()
+                    window = None
+                    window0.UnHide()
+                    continue
 
-                if event == "toggleStart":
-                    session.toggleStart(initPhase)
-                    window['toggleStart'].update(text=StartPause[session.started]) #update
-
-            # note, if the session isn't in the started state, the progress bar doesn't progress
-                if session.started:
-                    if session.progress >= 1000:
-                        print("Finished!")
-                        playsound("sms-alert-2-daniel_simon_short.mp3")
-                        sg.Popup("Go on to your next task?")
-                        # when signed off, save the session
-                        session.endSession(values['-TASK-'],values['-DETAILS-'])
-                        break
-
-                    elif datetime.now() >= session.currentTime + timedelta(seconds = 1):
-                        session.incrementProgress()
-                        session.updateCurrentTime()
-                        # print(timeRemaining)
-                        # window['displayTimeRemaining'].update(session.getTimeRemaining())
-                        # print(session.getTimeRemaining())
-                        window["ProgressBar"].UpdateBar(session.progress)
-        window_active = False
-        window.close()
-        window = None
-        window0.UnHide()    
+                elif datetime.now() >= session.currentTime + timedelta(seconds = 1):
+                    session.incrementProgress()
+                    session.updateCurrentTime()
+                    # print(timeRemaining)
+                    # window['displayTimeRemaining'].update(session.getTimeRemaining())
+                    # print(session.getTimeRemaining())
+                    window["ProgressBar"].UpdateBar(session.progress)    
 window0.close()

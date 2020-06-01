@@ -21,6 +21,10 @@ menuLayout = [
 
 ]
 
+baseLayout = [
+    [sg.Button("New Session"), sg.Quit()]
+]
+
 pastdateFrameLayout = [
     [sg.T('Date: '),sg.InputText(key='-DATE-')],
     [sg.Text('Start Time: '), sg.InputText(key='-STARTTIME-')], 
@@ -65,6 +69,7 @@ def validFieldInfo(*argv):
         return False
 
 #the loop
+
 while True:
     # poll the window every 1000 ms
     event, values = window.Read(timeout = 1000)
