@@ -95,7 +95,7 @@ class Session:
             return 0
 
     def saveSession(self):
-        with open("test.csv", "a") as fh:
+        with open("test.csv", "a",newline='') as fh:
             writer = csv.writer(fh,delimiter=',', quotechar='"')
             writer.writerow(
                 [self.currentDate, self.taskDescription, self.category, self.startTime, self.endTime, self.allotedTime, self.ellapsedTime, self.timeDifference, self.details]

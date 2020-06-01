@@ -7,26 +7,33 @@ from Session import Session
 import PySimpleGUI as sg
 from playsound import playsound
 from datetime import datetime, timedelta
+import pandas as pd
+
 
 """
 TODO: Time remaining
 TODO: Application Class refactor
 TODO: Graphical display of session breakdown
-TODO: Persistent Window between Sessions?
-TODO: Dynamically hide/reveal session type
 TODO: Move debug to menu
-TODO: Fix the append adding extra rows
+TODO: Make the today's sessions prettier
+TODO: Toggle today view
 """
 
 # Categories
 categoryOptions = sorted(["Phone Calls", "Meetings", "Emails", "IT Helpdesk", "Excel Development", "Teacher Resource Development", "R&D", "Activity Development", "Show Development", "Event Management", "Misc", "3D Printing"])
 sg.change_look_and_feel("Dark Blue 3")
 
-
-
+def getSessionInfo():
+    df = pd.read_csv("test.csv", header= 0, parse_dates= True)
+    dateToday = datetime.strftime(datetime.now(), "%Y/%m/%d")
+    dfFilter = df["Date"] == dateToday
+    filteredDF = df[dfFilter]
+    finalDF = filteredDF[["Task","Category", "Start Time", "End Time", "Description"]].to_string(justify="left")
+    return finalDF
 
 
 def generateMainWindow():
+
     pastdateFrameLayout = [
     [sg.T('Date: '),sg.InputText(key='-DATE-')],
     [sg.Text('Start Time: '), sg.InputText(key='-STARTTIME-')], 
@@ -40,16 +47,21 @@ def generateMainWindow():
     [sg.T('Details: '), sg.InputText(key='-DETAILS-')]
     ]
 
-    
-
-    windowLayout = [
-        [sg.CB("Debug Mode",key="-DEBUG-")],
+    column1Layout = [
+        [sg.CB("Debug Mode",key="-DEBUG-"), sg.CB("See Today's Sessions", key = '-SHOW SESSION-')],
         [sg.Frame("Details",metadataLayout)],
         # [sg.Text("Time remaining:"),sg.Text(0, key = 'displayTimeRemaining')],
         [sg.Frame("After the fact",pastdateFrameLayout)],
         [sg.ProgressBar(1000,'h',size=(40,20), key='ProgressBar')],
         [sg.Button('Record session',key='-LOG-',disabled=True), sg.Button("Start", key= "toggleStart", disabled=True),sg.Button("End Session", disabled=True, key="-END SESSION-"), sg.Cancel()]
     ]
+
+    column2Layout = [
+        [sg.Text("Today so far:")],
+        [sg.Text(getSessionInfo())]
+    ]
+
+    windowLayout = [[sg.Column(column1Layout),sg.Column(column2Layout, visible=False, key = '-SESSION COLUMN-')]]
     return sg.Window("Record Work Session", windowLayout)
 
 
@@ -73,6 +85,7 @@ def validFieldInfo(*argv):
 baseLayout = [[sg.Button("New Session"), sg.Quit()]]
 window0 = sg.Window("Session Tracker v4.0", baseLayout)
 window = None
+showSessionsLatch = False
 
 
 initPhase = True
@@ -103,6 +116,10 @@ while True:
         if values['-DEBUG-']:
             print(f"event: {event}, values: {values}")
 
+        if values['-SHOW SESSION-']:
+            window['-SESSION COLUMN-'].update(visible=True)
+        elif not values['-SHOW SESSION-']:
+            window['-SESSION COLUMN-'].update(visible=False) 
             
         # checking and updating buttons
         
