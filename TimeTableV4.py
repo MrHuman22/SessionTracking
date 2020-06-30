@@ -16,11 +16,11 @@ TODO: Application Class refactor
 TODO: Graphical display of session breakdown
 TODO: Move debug to menu
 TODO: Make the today's sessions prettier
-TODO: Toggle today view
+TODO: Set indefinite timer
 """
 
 # Categories
-categoryOptions = sorted(["Phone Calls", "Meetings", "Emails", "IT Helpdesk", "Excel Development", "Teacher Resource Development", "R&D", "Activity Development", "Show Development", "Event Management", "Misc", "3D Printing"])
+categoryOptions = sorted(["Documentation","Phone Calls", "Meetings", "Emails", "IT Helpdesk", "Excel Development", "Teacher Resource Development", "R&D", "Activity Development", "Show Development", "Event Management", "Misc", "3D Printing"])
 sg.change_look_and_feel("Dark Blue 3")
 
 def getSessionInfo():
@@ -85,12 +85,17 @@ def validFieldInfo(*argv):
 baseLayout = [[sg.Button("New Session"), sg.Quit()]]
 window0 = sg.Window("Session Tracker v4.0", baseLayout)
 window = None
-showSessionsLatch = False
-
 
 initPhase = True
 StartPause = {False : "Start", True: "Pause"}
 session = None #declare global variable
+
+# def finish():
+#     window.close()
+#     window = None
+#     window0.UnHide()
+#     session = None
+#     initPhase = True
 
 #the loop
 while True:
@@ -116,6 +121,7 @@ while True:
         if values['-DEBUG-']:
             print(f"event: {event}, values: {values}")
 
+        #TODO: Don't have to keep updating if it's already been shown
         if values['-SHOW SESSION-']:
             window['-SESSION COLUMN-'].update(visible=True)
         elif not values['-SHOW SESSION-']:
@@ -160,6 +166,7 @@ while True:
                 window.close()
                 window = None
                 window0.UnHide()
+                initPhase = True
                 continue
 
             if validEndSession(values['-TASK-'], values['-DETAILS-']):
@@ -170,9 +177,11 @@ while True:
             if event == "-END SESSION-":
                 print("Ending session early...")
                 session.endSession(values['-TASK-'],values['-DETAILS-'])
+                session = None
                 window.close()
                 window = None
                 window0.UnHide()
+                initPhase = True
                 continue
 
             if event == "toggleStart":
@@ -180,13 +189,14 @@ while True:
                 window['toggleStart'].update(text=StartPause[session.started]) #update
 
         # note, if the session isn't in the started state, the progress bar doesn't progress
-            if session.started:
+            if session != None and session.started:
                 if session.progress >= 1000:
                     print("Finished!")
                     playsound("sms-alert-2-daniel_simon_short.mp3")
                     sg.Popup("Go on to your next task?")
                     # when signed off, save the session
                     session.endSession(values['-TASK-'],values['-DETAILS-'])
+                    session = None # reset the session
                     window.close()
                     window = None
                     window0.UnHide()
